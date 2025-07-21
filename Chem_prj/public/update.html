@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update molecule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #333;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: none;
+        }
+        .success-message {
+            color: #388e3c;
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Update molecule by ID</h1>
+
+    <div class="form-container">
+        <form id="updateForm">
+            <div class="form-group">
+                <label for="molecule_id">ID:</label>
+                <input type="text" id="molecule_id" name="molecule_id" required>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="formula">Formula:</label>
+                <input type="text" id="formula" name="formula" required>
+            </div>
+
+            <div class="form-group">
+                <label for="structure">SMILES:</label>
+                <input type="text" id="structure" name="structure" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Describe:</label>
+                <textarea id="description" name="description" rows="4"></textarea>
+            </div>
+
+            <button type="submit">Update molecule</button>
+        </form>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+    </div>
+
+    <a href="/" class="back-link">← Back to menu</a>
+
+    <script>
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Сбрасываем сообщения
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+
+            const formData = new FormData(e.target);
+            const moleculeId = formData.get('molecule_id');
+
+            try {
+                const response = await fetch('/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams(formData)
+                });
+
+                if (response.ok) {
+                    // Показываем сообщение об успехе
+                    const successDiv = document.getElementById('successMessage');
+                    successDiv.textContent = 'Molecule updated successfully!';
+                    successDiv.style.display = 'block';
+
+                    // Очищаем форму
+                    e.target.reset();
+                } else {
+                    // Обработка ошибок
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Update failed');
+                }
+
+            } catch (error) {
+                // Показываем сообщение об ошибке
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = `Error: ${error.message}`;
+                errorDiv.style.display = 'block';
+
+                // Если это ошибка 404, выделяем поле ID
+                if (error.message.includes('not found')) {
+                    document.getElementById('molecule_id').style.borderColor = '#d32f2f';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

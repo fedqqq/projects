@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Molecule Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Find Molecule by ID</h1>
+        <form id="moleculeForm">
+            <label for="molecule_id">Molecule ID:</label>
+            <input type="text" id="molecule_id" name="molecule_id" required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="resultContainer" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('moleculeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const moleculeId = formData.get('molecule_id');
+            const resultContainer = document.getElementById('resultContainer');
+
+            try {
+                const response = await fetch('/get', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ molecule_id: moleculeId })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (Array.isArray(data) && data.length > 0) {
+                        const molecule = data[0];
+                        resultContainer.innerHTML = `
+                            <h3>Molecule Found</h3>
+                            <p><strong>Name:</strong> ${molecule.name || 'N/A'}</p>
+                            <p><strong>Formula:</strong> ${molecule.formula || 'N/A'}</p>
+                            <p><strong>SMILES:</strong> ${molecule.smiles || 'N/A'}</p>
+                        `;
+                        resultContainer.classList.remove('error');
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } else {
+                    throw new Error(data || 'Molecule not found');
+                }
+            } catch (error) {
+                resultContainer.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                resultContainer.classList.add('error');
+            }
+        });
+    </script>
+
+    <a href="/" class="back-link">← Back to menu</a>
+</body>
+</html>

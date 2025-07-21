@@ -1,0 +1,6 @@
+uvicorn[standard]
+rdkit-pypi==2022.9.5
+fastapi
+python-multipart
+numpy<2
+pytest
