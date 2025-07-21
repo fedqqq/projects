@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Molecule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+        }
+        .success {
+            color: #388e3c;
+            background-color: #e8f5e9;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #333;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Delete Molecule by ID</h1>
+        <form id="deleteForm">
+            <label for="molecule_id">Molecule ID:</label>
+            <input type="text" id="molecule_id" name="molecule_id" required>
+            <button type="submit">Delete</button>
+        </form>
+        <div id="resultContainer" class="result"></div>
+    </div>
+
+    <a href="/" class="back-link">← Back to menu</a>
+
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const moleculeId = formData.get('molecule_id');
+            const resultContainer = document.getElementById('resultContainer');
+
+            // Очищаем предыдущие результаты
+            resultContainer.innerHTML = '';
+            resultContainer.className = 'result';
+
+            try {
+                // Отправляем DELETE запрос на сервер
+                const response = await fetch(`/delete/${moleculeId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultContainer.innerHTML = `
+                        <div class="success">
+                            <h3>Success!</h3>
+                            <p>Molecule with ID <strong>${moleculeId}</strong> was successfully deleted.</p>
+                            <p>${data.message || 'Molecule removed from database'}</p>
+                        </div>
+                    `;
+                    resultContainer.classList.add('success');
+                } else {
+                    throw new Error(data.detail || 'Failed to delete molecule');
+                }
+            } catch (error) {
+                resultContainer.innerHTML = `
+                    <div class="error">
+                        <h3>Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                resultContainer.classList.add('error');
+            }
+        });
+    </script>
+</body>
+</html>

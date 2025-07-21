@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Substructure Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .molecules-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        .molecule-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e0e6ed;
+        }
+        .molecule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        .card-header {
+            border-bottom: 2px solid #eef2f7;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .molecule-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .substructure-count {
+            background: #4e54c8;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .property {
+            margin-bottom: 12px;
+        }
+        .property-title {
+            font-weight: bold;
+            color: #4e54c8;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .substructure-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .substructure-item {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f5f5f5;
+            font-family: monospace;
+        }
+        .substructure-item:last-child {
+            border-bottom: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            grid-column: 1 / -1;
+        }
+        .empty-db {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            grid-column: 1 / -1;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Substructure Analysis</h1>
+    <p style="text-align: center; color: #666; max-width: 800px; margin: 0 auto 30px;">
+        Shows all substructures found in each molecule from other molecules in the database
+    </p>
+
+    <div id="resultsContainer" class="molecules-container">
+        <div class="loading">Loading substructure data...</div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="/" class="back-link">← Back to main menu</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('resultsContainer');
+
+            try {
+                // Отправляем POST запрос для получения данных о подструктурах
+                const response = await fetch('/substr_search', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const substructureData = await response.json();
+
+                // Преобразуем объект в массив для удобства обработки
+                const molecules = Object.entries(substructureData).map(([name, substructures]) => ({
+                    name,
+                    substructures
+                }));
+
+                if (molecules.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-db">
+                            <h3>No molecules found in database</h3>
+                            <p>Add molecules to perform substructure analysis</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Сортируем молекулы по количеству подструктур (по убыванию)
+                molecules.sort((a, b) => b.substructures.length - a.substructures.length);
+
+                let html = '';
+                molecules.forEach(mol => {
+                    html += `
+                    <div class="molecule-card">
+                        <div class="card-header">
+                            <div class="molecule-name">${mol.name}</div>
+                            <div class="substructure-count">${mol.substructures.length} substructures</div>
+                        </div>
+
+                        <div class="property">
+                            <span class="property-title">Found substructures:</span>
+                            ${mol.substructures.length > 0 ?
+                                `<ul class="substructure-list">
+                                    ${mol.substructures.map(smile => `
+                                        <li class="substructure-item">${smile}</li>
+                                    `).join('')}
+                                </ul>` :
+                                '<p>No substructures found</p>'}
+                        </div>
+                    </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-db">
+                        <h3>Error Loading Data</h3>
+                        <p>${error.message}</p>
+                        <p>Please try again later</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

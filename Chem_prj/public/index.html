@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry prj</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .button-link {
+            display: block;
+            padding: 12px 20px;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button-link:hover {
+            background-color: #45a049;
+        }
+        .info {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chemistry project</h1>
+
+    <div class="button-container">
+        <a href="/add" class="button-link">Add molecule</a>
+        <a href="/get" class="button-link">Get molecule by ID</a>
+        <a href="/update" class="button-link">Update molecule by ID</a>
+        <a href="/delete" class="button-link">Delete molecule by ID</a>
+        <a href="/list_all" class="button-link">List all molecules</a>
+        <a href="/substr_search" class="button-link">Find substructure</a>
+    </div>
+
+</body>
+</html>
