@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: rag-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-rag_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-rag_password}
+      POSTGRES_DB: ${DB_NAME:-rag_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - rag-network
+
+  app:
+    build: .
+    container_name: rag-app
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-rag_user}
+      DB_PASSWORD: ${DB_PASSWORD:-rag_password}
+      DB_NAME: ${DB_NAME:-rag_db}
+      MODEL_PATH: ${MODEL_PATH:-/app/models/qwen2.5-1.5b-instruct-q4_k_m.gguf}
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./pdfs:/app/pdfs
+      - ./arxiv_processed:/app/arxiv_processed
+      - ./models:/app/models
+      - ./cache:/root/.cache
+    restart: unless-stopped
+    networks:
+      - rag-network
+
+volumes:
+  postgres_data:
+
+networks:
+  rag-network:
+    driver: bridge
