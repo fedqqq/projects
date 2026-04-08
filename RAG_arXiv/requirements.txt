@@ -1,0 +1,16 @@
+streamlit
+psycopg2-binary
+pgvector
+sentence-transformers
+llama-cpp-python
+pypdf2
+pymupdf
+pdfplumber
+tiktoken
+pandas
+numpy
+tqdm
+requests
+xmltodict
+python-dotenv
+camelot-py
